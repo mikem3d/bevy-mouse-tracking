@@ -15,9 +15,25 @@ fn main() {
         .add_plugins((DefaultPlugins, MousePosPlugin, MouseMotionPlugin))
         .insert_resource(ClearColor(Color::BLACK))
         .add_systems(Startup, setup)
-        .add_systems(Update, bevy::window::close_on_esc)
+        .add_systems(Update, close_on_esc)
         .add_systems(Update, run)
         .run();
+}
+
+pub fn close_on_esc(
+    mut commands: Commands,
+    focused_windows: Query<(Entity, &Window)>,
+    input: Res<ButtonInput<KeyCode>>,
+) {
+    for (window, focus) in focused_windows.iter() {
+        if !focus.focused {
+            continue;
+        }
+
+        if input.just_pressed(KeyCode::Escape) {
+            commands.entity(window).despawn();
+        }
+    }
 }
 
 fn setup(
@@ -44,7 +60,7 @@ fn setup(
     let style = TextStyle {
         font,
         font_size: 24.0,
-        color: Color::ORANGE,
+        color: Color::WHITE,
     };
     let (win_width, win_height) = (window.width(), window.height());
     let (hud_x, hud_y) = (win_width / 2. * -1., win_height / 2.);
@@ -54,7 +70,7 @@ fn setup(
 
     commands.spawn((
         Text2dBundle {
-            text: Text::from_section(value, style).with_alignment(TextAlignment::Left),
+            text: Text::from_section(value, style).with_justify(JustifyText::Right),
             transform,
             ..Default::default()
         },
